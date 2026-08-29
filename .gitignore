@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# uv
+.python-version
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Chroma / vector store data
+chroma/
+chroma_db/
+*.sqlite3
+
+# Logs
+*.log
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Data files
+data/

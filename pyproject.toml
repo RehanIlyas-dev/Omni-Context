@@ -1,0 +1,18 @@
+[project]
+name = "omni-context"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.141.1",
+    "fastembed>=0.8.0",
+    "groq>=1.7.0",
+    "httpx>=0.28.1",
+    "langchain-text-splitters>=1.1.2",
+    "pydantic>=2.13.5",
+    "pypdf>=6.16.2",
+    "python-docx>=1.2.0",
+    "python-multipart>=0.0.32",
+    "python-pptx>=1.0.2",
+    "uvicorn>=0.52.4",
+]
