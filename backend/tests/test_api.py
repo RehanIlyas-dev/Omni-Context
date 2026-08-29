@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from src.main import app
+from backend.main import app
 
 
 def _client():

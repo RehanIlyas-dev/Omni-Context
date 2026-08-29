@@ -6,9 +6,9 @@ from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
 
-from src.config import ALLOWED_EXTENSIONS
-from src.schemas import DocumentUploadResponse, BatchDocumentUploadResponse
-from src import state
+from backend.config import ALLOWED_EXTENSIONS
+from backend.schemas import DocumentUploadResponse, BatchDocumentUploadResponse
+from backend import state
 
 ingestion_router = APIRouter(tags=["Ingestion"])
 

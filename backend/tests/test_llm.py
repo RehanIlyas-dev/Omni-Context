@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from src.llm import LLMHandler
+from backend.llm import LLMHandler
 
 def test_prompt_formatting():
     handler = LLMHandler()

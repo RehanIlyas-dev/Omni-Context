@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
-from src.ingest import DocumentIngestor
-from src.pipeline import RAGPipeline
+from backend.ingest import DocumentIngestor
+from backend.pipeline import RAGPipeline
 
 # Shared backend instances, populated during application startup (lifespan).
 ingestor: Optional[DocumentIngestor] = None

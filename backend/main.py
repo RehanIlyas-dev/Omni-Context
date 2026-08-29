@@ -4,11 +4,11 @@ from contextlib import asynccontextmanager
 import chromadb
 from fastapi import FastAPI
 
-from src.config import CHROMA_DB_PATH, COLLECTION_NAME, DEFAULT_GROQ_MODEL
-from src.ingest import DocumentIngestor
-from src.pipeline import RAGPipeline
-from src.routers import ingestion_router, query_router
-from src import state
+from backend.config import CHROMA_DB_PATH, COLLECTION_NAME, DEFAULT_GROQ_MODEL
+from backend.ingest import DocumentIngestor
+from backend.pipeline import RAGPipeline
+from backend.routers import ingestion_router, query_router
+from backend import state
 
 
 @asynccontextmanager

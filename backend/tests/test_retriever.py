@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.retriever import VectorRetriever
-from src.config import DEFAULT_SCORE_THRESHOLD
+from backend.retriever import VectorRetriever
+from backend.config import DEFAULT_SCORE_THRESHOLD
 
 def test_retrieval():
     print("=" * 60)

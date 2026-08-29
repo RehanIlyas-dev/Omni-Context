@@ -4,8 +4,8 @@ import os
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
-from src.schemas import QueryRequest, QueryResponse
-from src import state
+from backend.schemas import QueryRequest, QueryResponse
+from backend import state
 
 query_router = APIRouter(tags=["RAG Chain"])
 

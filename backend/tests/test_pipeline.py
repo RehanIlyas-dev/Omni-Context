@@ -3,8 +3,8 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from src.pipeline import RAGPipeline
-from src.config import DEFAULT_SCORE_THRESHOLD
+from backend.pipeline import RAGPipeline
+from backend.config import DEFAULT_SCORE_THRESHOLD
 
 
 def test_rag_pipeline():

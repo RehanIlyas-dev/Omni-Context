@@ -38,7 +38,7 @@ GROQ_API_KEY=your-key-here
 ## Running
 
 ```bash
-uvicorn src.main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 Then open the interactive docs at http://localhost:8000/docs.
@@ -64,7 +64,7 @@ Omni-Context/
 ├── README.md
 ├── pyproject.toml
 ├── uv.lock
-└── src/
+└── backend/
     ├── __init__.py
     ├── config.py
     ├── ingest.py
@@ -90,7 +90,7 @@ Omni-Context/
 ## Testing
 
 ```bash
-python -m pytest src/tests/
+python -m pytest backend/tests/
 ```
 
 - `test_retriever.py` runs locally (no API key required).
@@ -99,7 +99,7 @@ python -m pytest src/tests/
 To rebuild the vector store from the sample docs in `data/`:
 
 ```bash
-python -m src.ingest
+python -m backend.ingest
 ```
 
 (`chroma_db/` and `data/*` are git-ignored and must not be committed.)
