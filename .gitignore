@@ -34,7 +34,7 @@ chroma_db/
 .idea/
 .vscode/
 *.swp
-
+AGENTS.md
 # OS
 .DS_Store
 Thumbs.db

@@ -46,7 +46,7 @@ class RAGPipeline:
         file_type_filter: Optional[str] = None,
         model: Optional[str] = None,
         temperature: float = 0.2,
-        stream: bool = False,
+        stream: bool = True,
     ) -> RAGResponse:
         """Executes full RAG workflow: Vector Search -> Grounded Groq Generation."""
         

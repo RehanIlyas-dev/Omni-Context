@@ -6,6 +6,7 @@ from fastembed import TextEmbedding
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 from pptx import Presentation
+from typing import List, Dict, Any
 
 from .config import CHROMA_DB_PATH, EMBEDDING_MODEL
 
@@ -96,6 +97,29 @@ class DocumentIngestor:
             return self._load_docx(path)
         else:
             raise ValueError(f"Unsupported file format: {ext}")
+        
+    # Processes and ingests multiple files sequentially in the ChromaDB
+    def ingest_files(self, file_paths: List[str]) -> List[Dict[str, Any]]:
+        results = []
+        for path in file_paths:
+            filename = Path(path).name
+            file_ext = Path(path).suffix.lower()
+            try:
+                self.ingest_file(path)
+                results.append({
+                    "filename": filename,
+                    "file_type": file_ext,
+                    "status": "success",
+                    "message": f"Successfully ingested '{filename}' into ChromaDB."
+                })
+            except Exception as e:
+                results.append({
+                    "filename": filename,
+                    "file_type": file_ext,
+                    "status": "failed",
+                    "message": f"Failed to ingest '{filename}': {str(e)}"
+                })
+        return results
 
     def chunk_text(self, text: str, chunk_size: int = 500, chunk_overlap: int = 100) -> list[str]:
         splitter = RecursiveCharacterTextSplitter(
