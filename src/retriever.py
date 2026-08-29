@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
-from pathlib import Path
 import chromadb
 from fastembed import TextEmbedding
+
+from .config import CHROMA_DB_PATH, COLLECTION_NAME, DEFAULT_SCORE_THRESHOLD, EMBEDDING_MODEL
 
 @dataclass
 class RetrievalResult:
@@ -15,25 +16,24 @@ class RetrievalResult:
     file_type: str
     chunk_index: int
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-    
 class VectorRetriever:
     def __init__(
         self,
         db_path: str = None,
-        collection_name: str = "omni_context",
-        score_threshold: float = 0.7,
+        collection_name: str = COLLECTION_NAME,
+        score_threshold: float = DEFAULT_SCORE_THRESHOLD,
+        client: Optional["chromadb.Client"] = None,
     ):
-        self.db_path = db_path or str(BASE_DIR / "chroma_db")
+        self.db_path = db_path or CHROMA_DB_PATH
         self.collection_name = collection_name
         self.score_threshold = score_threshold
 
         # Load Local Embedding Engine
         print("Loading embedding model for retrieval (BAAI/bge-small-en-v1.5)...")
-        self.embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        self.embedding_model = TextEmbedding(model_name=EMBEDDING_MODEL)
 
         # Connect to existing ChromaDB collection
-        self.client = chromadb.PersistentClient(path=self.db_path)
+        self.client = client or chromadb.PersistentClient(path=self.db_path)
         self.collection = self.client.get_collection(name=self.collection_name)
 
     def retrieve(

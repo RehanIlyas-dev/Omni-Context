@@ -4,6 +4,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.pipeline import RAGPipeline
+from src.config import DEFAULT_SCORE_THRESHOLD
 
 
 def test_rag_pipeline():
@@ -17,10 +18,10 @@ def test_rag_pipeline():
         print("Set your API key before running: export GROQ_API_KEY='your-key-here'")
         return
 
-    # Initialize RAG Pipeline (Defaults to Groq model: llama-3.3-70b-versatile)
+    # Initialize RAG Pipeline (Defaults to Groq model from config: qwen/qwen3.6-27b)
     pipeline = RAGPipeline(
         db_path="./chroma_db",
-        score_threshold=0.7,
+        score_threshold=DEFAULT_SCORE_THRESHOLD,
         model="qwen/qwen3.6-27b"
     )
 
@@ -29,6 +30,8 @@ def test_rag_pipeline():
     print(f"\n[Test 1] Query: '{query_1}'")
 
     response_1 = pipeline.run(query=query_1, top_k=3, stream=False)
+    assert response_1.chunks_retrieved >= 1, "In-scope query should retrieve at least one chunk"
+    assert isinstance(response_1.answer, str), "Non-streaming answer should be a string"
 
     print(f"Chunks Retrieved : {response_1.chunks_retrieved}")
     print(f"Sources Used     : {response_1.sources}")
@@ -55,6 +58,7 @@ def test_rag_pipeline():
     print(f"[Test 3] Query: '{query_3}' (Out-of-scope query)")
 
     response_3 = pipeline.run(query=query_3, top_k=3, stream=False)
+    assert response_3.chunks_retrieved == 0, "Out-of-scope query should retrieve 0 chunks"
 
     print(f"Chunks Retrieved : {response_3.chunks_retrieved}")
     print(f"Generated Answer :\n{response_3.answer}\n")

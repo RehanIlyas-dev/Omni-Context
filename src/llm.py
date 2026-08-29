@@ -4,6 +4,8 @@ from typing import List, Dict, Any, Generator, Union, Optional
 from dotenv import load_dotenv
 from groq import Groq
 
+from .config import DEFAULT_GROQ_MODEL
+
 load_dotenv()
 
 DEFAULT_SYSTEM_PROMPT = """You are an accurate, grounded AI assistant answering questions based on the retrieved context documents provided below.
@@ -30,7 +32,7 @@ class LLMHandler:
     def __init__(
         self,
         default_provider: str = "groq",
-        groq_model: str = "qwen/qwen3.6-27b",
+        groq_model: str = DEFAULT_GROQ_MODEL,
         system_prompt: Optional[str] = None,
     ):
         self.default_provider = default_provider.lower()

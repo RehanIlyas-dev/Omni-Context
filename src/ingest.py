@@ -4,26 +4,27 @@ import chromadb
 from docx import Document
 from fastembed import TextEmbedding
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pypdf import PdfReader  
+from pypdf import PdfReader
 from pptx import Presentation
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from .config import CHROMA_DB_PATH, EMBEDDING_MODEL
 
 
 class DocumentIngestor:
-    def __init__(self, db_path: str = None, collection_name: str = "omni_context"):
-        self.db_path = db_path or str(BASE_DIR / "chroma_db")
-        self.db_path = db_path
+    def __init__(self, db_path: str = None, collection_name: str = "omni_context", client=None):
+        self.db_path = db_path or CHROMA_DB_PATH
         self.collection_name = collection_name
 
         # Load the embedding model
-        print("Loading embedding model (BAAI/bge-small-en-v1.5)...")
-        self.embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        print(f"Loading embedding model ({EMBEDDING_MODEL})...")
+        self.embedding_model = TextEmbedding(model_name=EMBEDDING_MODEL)
 
         # Initialize ChromaDB client and collection
         print(f"Initializing ChromaDB at '{self.db_path}' and collection '{self.collection_name}'...")
-        self.client = chromadb.PersistentClient(path=self.db_path)
-        self.collection = self.client.get_or_create_collection(name=self.collection_name)
+        self.client = client or chromadb.PersistentClient(path=self.db_path)
+        self.collection = self.client.get_or_create_collection(
+            name=self.collection_name, metadata={"hnsw:space": "cosine"}
+        )
 
     def _load_txt_or_md(self, path: Path) -> str:
         with open(path, "r", encoding="utf-8") as f:

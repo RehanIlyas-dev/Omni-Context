@@ -4,19 +4,21 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.retriever import VectorRetriever
+from src.config import DEFAULT_SCORE_THRESHOLD
 
 def test_retrieval():
     print("=" * 60)
     print(" TESTING OMNICONTEXT RETRIEVER")
     print("=" * 60)
 
-    # Initialize retriever with distance threshold = 1.2
-    retriever = VectorRetriever(db_path="./chroma_db", score_threshold=0.7)
+    # Initialize retriever with the configured distance threshold
+    retriever = VectorRetriever(db_path="./chroma_db", score_threshold=DEFAULT_SCORE_THRESHOLD)
 
     # Test Query 1: Relevant Query
     query_1 = "What is OmniContext and what vector database does it use?"
     print(f"\n[Test 1] Query: '{query_1}'")
     results_1 = retriever.retrieve(query=query_1, top_k=3)
+    assert len(results_1) >= 1, "In-scope query should retrieve at least one chunk"
 
     print(f"Retrieved {len(results_1)} relevant chunk(s):")
     for i, res in enumerate(results_1, start=1):
@@ -30,6 +32,7 @@ def test_retrieval():
     print(f"\n" + "-" * 60)
     print(f"[Test 2] Query: '{query_2}' (Out-of-scope query)")
     results_2 = retriever.retrieve(query=query_2, top_k=3)
+    assert len(results_2) == 0, "Out-of-scope query should be filtered to 0 chunks by the threshold"
 
     print(f"Retrieved {len(results_2)} relevant chunk(s) after thresholding.")
 

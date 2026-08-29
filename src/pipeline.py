@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any, Union, Generator, Optional
-from src.retriever import VectorRetriever, RetrievalResult
-from src.llm import LLMHandler
+from .retriever import VectorRetriever, RetrievalResult
+from .llm import LLMHandler
+from .config import (
+    CHROMA_DB_PATH,
+    COLLECTION_NAME,
+    DEFAULT_GROQ_MODEL,
+    DEFAULT_SCORE_THRESHOLD,
+)
 
 
 @dataclass
@@ -16,16 +22,18 @@ class RAGResponse:
 class RAGPipeline:
     def __init__(
         self,
-        db_path: str = "./chroma_db",
-        collection_name: str = "omni_context",
-        score_threshold: float = 0.7,
-        model: str = "qwen/qwen3.6-27b",
+        db_path: str = CHROMA_DB_PATH,
+        collection_name: str = COLLECTION_NAME,
+        score_threshold: float = DEFAULT_SCORE_THRESHOLD,
+        model: str = DEFAULT_GROQ_MODEL,
+        client=None,
     ):
         # 1. Initialize Retrieval Engine
         self.retriever = VectorRetriever(
             db_path=db_path,
             collection_name=collection_name,
             score_threshold=score_threshold,
+            client=client,
         )
 
         # 2. Initialize LLM Engine (Groq execution)
