@@ -9,6 +9,7 @@ from backend.ingest import DocumentIngestor
 from backend.pipeline import RAGPipeline
 from backend.semantic_cache import RedisSemanticCache
 from backend.routers import ingestion_router, query_router
+from backend.openapi_patch import patch_upload_openapi
 from backend import state
 
 
@@ -45,6 +46,8 @@ app = FastAPI(
 
 app.include_router(ingestion_router)
 app.include_router(query_router)
+
+patch_upload_openapi(app)
 
 
 @app.get("/", tags=["Health"])

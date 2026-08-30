@@ -100,6 +100,8 @@ class RAGPipeline:
                 "source": res.source,
                 "file_type": res.file_type,
                 "distance": res.distance,
+                "score": round(1 - res.distance, 4),
+                "content": res.text,
                 "chunk_index": res.chunk_index,
             }
             for res in retrieved_results

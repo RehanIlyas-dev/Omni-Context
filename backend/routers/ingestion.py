@@ -1,13 +1,21 @@
 import shutil
 import uuid
 from pathlib import Path
+from collections import defaultdict
 from typing import List
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
 
 from backend.config import ALLOWED_EXTENSIONS
-from backend.schemas import DocumentUploadResponse, BatchDocumentUploadResponse
+from backend.schemas import (
+    DocumentUploadResponse,
+    BatchDocumentUploadResponse,
+    DocumentInfo,
+    DocumentListResponse,
+    ChunkInfo,
+    ChunkListResponse,
+)
 from backend import state
 
 ingestion_router = APIRouter(tags=["Ingestion"])
@@ -113,3 +121,79 @@ async def upload_batch_documents(files: List[UploadFile] = File(...)):
             path_obj = Path(temp_path_str)
             if path_obj.exists():
                 path_obj.unlink()
+
+
+@ingestion_router.get(
+    "/documents",
+    response_model=DocumentListResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def list_documents():
+    # List all unique ingested files with chunk counts from ChromaDB.
+    if not state.ingestor:
+        raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
+
+    try:
+        collection = state.ingestor.collection
+        result = collection.get(include=["metadatas"])
+        if not result["ids"]:
+            return DocumentListResponse(documents=[])
+
+        files = defaultdict(lambda: {"chunk_count": 0, "file_type": ""})
+        for meta in result["metadatas"]:
+            source = meta.get("source", "unknown")
+            files[source]["chunk_count"] += 1
+            files[source]["file_type"] = meta.get("file_type", "")
+
+        documents = [
+            DocumentInfo(
+                filename=name,
+                file_type=info["file_type"],
+                chunk_count=info["chunk_count"],
+            )
+            for name, info in sorted(files.items())
+        ]
+        return DocumentListResponse(documents=documents)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list documents: {str(e)}")
+
+
+@ingestion_router.get(
+    "/documents/{filename}/chunks",
+    response_model=ChunkListResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_document_chunks(filename: str):
+    # Get all chunks for a specific document, ordered by chunk_index.
+    if not state.ingestor:
+        raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
+
+    try:
+        collection = state.ingestor.collection
+        result = collection.get(
+            include=["documents", "metadatas"],
+            where={"source": filename},
+        )
+        if not result["ids"]:
+            raise HTTPException(status_code=404, detail=f"No chunks found for '{filename}'.")
+
+        chunks = []
+        for doc, meta in zip(result["documents"], result["metadatas"]):
+            chunks.append(
+                ChunkInfo(
+                    chunk_index=meta.get("chunk_index", 0),
+                    content=doc,
+                    file_type=meta.get("file_type", ""),
+                )
+            )
+        chunks.sort(key=lambda c: c.chunk_index)
+
+        return ChunkListResponse(
+            filename=filename,
+            chunk_count=len(chunks),
+            chunks=chunks,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch chunks: {str(e)}")

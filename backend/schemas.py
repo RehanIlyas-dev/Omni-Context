@@ -28,9 +28,33 @@ class QueryResponse(BaseModel):
     cached: bool = False
     similarity_score: Optional[float] = None
     
-# Batch Document Upload Response Schema    
+# Batch Document Upload Response Schema
 class BatchDocumentUploadResponse(BaseModel):
     total_files: int
     successful_files: int
     failed_files: int
     details: List[DocumentUploadResponse]
+
+
+# Document Listing Schemas
+class DocumentInfo(BaseModel):
+    filename: str
+    file_type: str
+    chunk_count: int
+
+
+class DocumentListResponse(BaseModel):
+    documents: List[DocumentInfo]
+
+
+# Chunk Listing Schemas
+class ChunkInfo(BaseModel):
+    chunk_index: int
+    content: str
+    file_type: str
+
+
+class ChunkListResponse(BaseModel):
+    filename: str
+    chunk_count: int
+    chunks: List[ChunkInfo]
