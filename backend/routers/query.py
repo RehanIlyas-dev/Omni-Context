@@ -65,4 +65,6 @@ def query_rag(request: QueryRequest):
         answer=str(rag_response.answer),
         sources=rag_response.sources,
         chunks_retrieved=rag_response.chunks_retrieved,
+        cached=rag_response.cached,
+        similarity_score=rag_response.similarity_score,
     )

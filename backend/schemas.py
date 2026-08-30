@@ -25,6 +25,8 @@ class QueryResponse(BaseModel):
     answer: str
     sources: List[Dict[str, Any]]
     chunks_retrieved: int
+    cached: bool = False
+    similarity_score: Optional[float] = None
     
 # Batch Document Upload Response Schema    
 class BatchDocumentUploadResponse(BaseModel):

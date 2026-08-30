@@ -3,10 +3,12 @@ from typing import Optional
 
 from backend.ingest import DocumentIngestor
 from backend.pipeline import RAGPipeline
+from backend.semantic_cache import RedisSemanticCache
 
 # Shared backend instances, populated during application startup (lifespan).
 ingestor: Optional[DocumentIngestor] = None
 pipeline: Optional[RAGPipeline] = None
+cache: Optional[RedisSemanticCache] = None
 
 # Directory for temporarily staging uploaded files before ingestion.
 UPLOAD_DIR = Path("./data/uploads")

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,3 +11,6 @@ DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
 DEFAULT_SCORE_THRESHOLD = 0.4
 
 ALLOWED_EXTENSIONS = {".txt", ".md", ".pdf", ".pptx", ".ppt", ".docx", ".doc"}
+
+# Semantic Cache
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")

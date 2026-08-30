@@ -23,19 +23,33 @@ citation-aware answers through a streaming-capable HTTP interface.
 # Create the virtual environment and install dependencies
 uv sync
 
-# Activate the existing venv (note: it is named with a space)
-source "Omni Context/bin/activate"
+# Activate the virtual environment (note: it is named with a space; `uv sync` recreates it as `.venv`).
+- Run API: `uvicorn backend.main:app --reload`
+  - NOT `omni_context.main:app` — there is no `omni_context` package; all code is under `backend/`.
+- Run tests: `python -m pytest backend/tests/`
+  - `test_retriever.py` is fully local. `test_pipeline.py` / `test_llm.py` need a live `GROQ_API_KEY` (they skip their body if unset).
+- Run ingestion as a module: `python -m backend.ingest`
+  - `backend/` uses relative imports (`from .config import ...`), so always use `python -m backend.<module>` — never `python backend/ingest.py`.
 ```
 
-Create a `.env` file in the repo root with your Groq key:
+Create a `.env` file in the repo root with your keys:
 
 ```
 GROQ_API_KEY=your-key-here
+REDIS_URL=redis://localhost:6379
 ```
 
 (A `.env.example` is provided as a template. `.env` is git-ignored.)
 
 ## Running
+
+Make sure Redis is running before starting the API:
+
+```bash
+redis-server --daemonize yes
+```
+
+Then start the API:
 
 ```bash
 uvicorn backend.main:app --reload
@@ -47,10 +61,24 @@ Then open the interactive docs at http://localhost:8000/docs.
 
 | Method | Path              | Description                                                                                                                                       |
 | ------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/`             | Health check (`status`, `groq_configured`).                                                                                                   |
+| GET    | `/`             | Health check (`status`, `groq_configured`, `cache_enabled`).                                                                                                   |
 | POST   | `/upload`       | Upload a single file and index it (returns 201 on success).                                                                                       |
 | POST   | `/upload/batch` | Upload many files; per-file status (`success` / `skipped`).                                                                                   |
-| POST   | `/query`        | RAG query.`stream: true` → chunked text + `X-Rag-Meta` header; `stream: false` → JSON with `answer`, `sources`, `chunks_retrieved`. |
+| POST   | `/query`        | RAG query.`stream: true` → chunked text + `X-Rag-Meta` header; `stream: false` → JSON with `answer`, `sources`, `chunks_retrieved`, `cached`, `similarity_score`. |
+
+### Semantic Cache
+
+When enabled (Redis reachable at `REDIS_URL`), the `/query` endpoint caches responses by **semantic similarity** rather than exact string match:
+
+- **1st query** (cache miss): runs ChromaDB retrieval + Groq generation → returns `cached: False`
+- **2nd query** (exact match): `cached: True`, `similarity: 1.0` → instant response
+- **Near-duplicate** (e.g. "Tell me about Rehan" after "What is Rehan?"): `cached: True`, `similarity: 0.9154` if cosine distance ≤ 0.12
+
+Cache is **skipped** for file-type filtered queries and streaming responses (streaming generators aren't serializable). Configure `REDIS_URL` in `.env` to enable.
+
+```env
+REDIS_URL=redis://localhost:6379
+```
 
 All ingestion runs the embedding step off the event loop. Unsupported file types
 in `/upload/batch` are reported as `skipped` rather than failing the whole request.
