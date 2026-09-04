@@ -15,5 +15,5 @@ ALLOWED_EXTENSIONS = {".txt", ".md", ".pdf", ".pptx", ".ppt", ".docx", ".doc"}
 # Semantic Cache
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 # Render Redis uses TLS — auto-upgrade redis:// to rediss:// for Render hosts
-if REDIS_URL.startswith("redis://") and ".red." in REDIS_URL:
+if REDIS_URL.startswith("redis://") and "localhost" not in REDIS_URL:
     REDIS_URL = REDIS_URL.replace("redis://", "rediss://", 1)
