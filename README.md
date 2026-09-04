@@ -21,6 +21,7 @@ A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, gene
 - **Vector Search** — ChromaDB with cosine distance retrieval and configurable score threshold.
 - **Streaming RAG** — Groq-powered generation (`qwen/qwen3.6-27b`) with real-time token streaming.
 - **Semantic Cache** — Redis-backed vector cache (RedisVL). Near-duplicate queries return cached responses instantly.
+- **Session Isolation** — Anonymous UUID sessions. Each browser gets isolated documents. "New Session" button clears state.
 - **Professional UI** — Dark theme chat interface with file upload, ingestion queue, source cards, and chunk viewer.
 - **Swagger UI** — Full API documentation at `/docs` with file picker support.
 
