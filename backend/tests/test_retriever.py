@@ -11,16 +11,14 @@ def test_retrieval():
     print(" TESTING OMNICONTEXT RETRIEVER")
     print("=" * 60)
 
-    # Initialize retriever with the configured distance threshold
-    retriever = VectorRetriever(db_path="./chroma_db", score_threshold=DEFAULT_SCORE_THRESHOLD)
-
-    # Skip if collection doesn't exist (CI with no ingested data)
+    # Initialize retriever — skip if collection doesn't exist (CI with no ingested data)
     try:
-        count = retriever.collection.count()
+        retriever = VectorRetriever(db_path="./chroma_db", score_threshold=DEFAULT_SCORE_THRESHOLD)
     except Exception as e:
         print(f"\n[SKIP] Collection not available: {e}")
         return
 
+    count = retriever.collection.count()
     if count == 0:
         print("\n[SKIP] Collection is empty — no data to retrieve")
         return
