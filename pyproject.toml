@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "omni-context"
 version = "0.1.0"
@@ -20,3 +24,6 @@ dependencies = [
     "uvicorn>=0.52.4",
     "numpy>=1.26.5",
 ]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]

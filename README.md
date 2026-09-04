@@ -3,7 +3,9 @@
 A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, generate semantic embeddings, and get grounded, citation-aware answers through a streaming chat interface.
 
 **Backend:** FastAPI · ChromaDB · FastEmbed · Groq · Redis semantic cache
+
 **Frontend:** React 19 · Vite 8 · Tailwind CSS 4
+
 **Infra:** Docker · CI/CD · Railway · Vercel
 
 ---
