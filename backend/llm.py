@@ -20,10 +20,19 @@ Rules:
 _THINK_RE = re.compile(r"<think>.*?(?:</think>|</think>|$)", re.DOTALL | re.IGNORECASE)
 
 def _strip_think(text: str) -> str:
-    # Remove thinking from the LLM response so that the rate limits are not exceeded 
+    # Remove thinking from the LLM response. If the entire response is inside
+    # think tags (common with Qwen 3 models), keep the inner content instead
+    # of returning empty.
     if not text:
         return text
-    return _THINK_RE.sub("", text).strip()
+    stripped = _THINK_RE.sub("", text).strip()
+    if stripped:
+        return stripped
+    # Entire response was inside think tags — extract the inner content
+    inner = re.search(r"<think>(.*?)$", text, re.DOTALL | re.IGNORECASE)
+    if inner:
+        return inner.group(1).strip()
+    return text.strip()
 
 
 class LLMHandler:
@@ -127,6 +136,7 @@ class LLMHandler:
             def chunk_generator():
                 buf = ""
                 in_think = False
+                yielded_any = False
                 for chunk in response:
                     delta = chunk.choices[0].delta.content
                     if not delta:
@@ -142,11 +152,19 @@ class LLMHandler:
                         if close_tag:
                             rest = buf[buf.find(close_tag) + len(close_tag):]
                             if rest:
+                                yielded_any = True
                                 yield rest
                             in_think = False
                             buf = ""
                     else:
+                        yielded_any = True
                         yield delta
+                # If everything was inside think tags and nothing was yielded,
+                # yield the buffered content as a fallback (Qwen 3 behavior)
+                if not yielded_any and buf:
+                    cleaned = re.sub(r"<think.*$", "", buf, flags=re.DOTALL | re.IGNORECASE).strip()
+                    if cleaned:
+                        yield cleaned
 
             return chunk_generator()
         else:
