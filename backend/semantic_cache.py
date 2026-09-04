@@ -48,8 +48,8 @@ class RedisSemanticCache:
 
         try:
             self.index = SearchIndex.from_dict(schema)
-            # Render Redis requires TLS — create client with SSL settings
-            if redis_url.startswith("rediss://"):
+            # Render Redis requires TLS — always attempt SSL connection
+            if "localhost" not in redis_url:
                 client = Redis.from_url(
                     redis_url,
                     ssl_cert_reqs=ssl.CERT_NONE,
@@ -62,7 +62,7 @@ class RedisSemanticCache:
             self.connected = True
             logger.info("[CACHE] Redis semantic cache connected successfully.")
         except Exception as e:
-            logger.warning(f"[CACHE] Redis unavailable, cache disabled: {e}")
+            logger.warning(f"[CACHE] Redis unavailable, cache disabled: {type(e).__name__}: {e}")
             self.index = None
 
     def _embed_text(self, text: str) -> np.ndarray:
