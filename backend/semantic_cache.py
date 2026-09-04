@@ -1,9 +1,11 @@
 import json
 import logging
 import uuid
+import ssl
 import numpy as np
 from typing import Optional, Dict, Any
 from fastembed import TextEmbedding
+from redis import Redis
 from redisvl.index import SearchIndex
 from redisvl.query import VectorQuery
 
@@ -46,7 +48,16 @@ class RedisSemanticCache:
 
         try:
             self.index = SearchIndex.from_dict(schema)
-            self.index.connect(redis_url)
+            # Render Redis requires TLS — create client with SSL settings
+            if redis_url.startswith("rediss://"):
+                client = Redis.from_url(
+                    redis_url,
+                    ssl_cert_reqs=ssl.CERT_NONE,
+                    ssl_check_hostname=False,
+                )
+                self.index.set_client(client)
+            else:
+                self.index.connect(redis_url)
             self.index.create(overwrite=False)
             self.connected = True
             logger.info("[CACHE] Redis semantic cache connected successfully.")
