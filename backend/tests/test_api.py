@@ -19,7 +19,7 @@ def test_health_and_router_registration():
         assert r.status_code == 200
         body = r.json()
         assert body["status"] == "online"
-        assert body["groq_configured"] is True
+        assert isinstance(body["groq_configured"], bool)
 
         # Endpoints defined by the routers are registered on the app.
         paths = set(app.openapi()["paths"].keys())

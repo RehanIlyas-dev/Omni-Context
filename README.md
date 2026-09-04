@@ -1,4 +1,4 @@
-# OmniContext
+# Omni Context
 
 A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, generate semantic embeddings, and get grounded, citation-aware answers through a streaming chat interface.
 
