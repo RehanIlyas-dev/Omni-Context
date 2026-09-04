@@ -134,6 +134,7 @@ async def list_documents():
         raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
 
     try:
+        # Fetch all documents and their metadata from the ChromaDB collection.
         collection = state.ingestor.collection
         result = collection.get(include=["metadatas"])
         if not result["ids"]:

@@ -50,7 +50,7 @@ class LLMHandler:
                 raise ValueError(
                     "GROQ_API_KEY environment variable is not set. Set it to use the Groq provider."
                 )
-            self._groq_client = Groq(api_key=self.groq_api_key)
+            self._groq_client = Groq(api_key=self.groq_api_key, max_retries=0)
         return self._groq_client
 
     def format_context(self, context_chunks: List[Union[Dict[str, Any], str]]) -> str:
@@ -119,7 +119,8 @@ class LLMHandler:
     ) -> Union[str, Generator[str, None, None]]:
         """Interfaces with Groq Cloud API."""
         response = self.groq_client.chat.completions.create(
-            model=model, messages=messages, temperature=temperature, stream=stream
+            model=model, messages=messages, temperature=temperature, stream=stream,
+            max_tokens=512,
         )
 
         if stream:

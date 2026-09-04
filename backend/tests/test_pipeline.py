@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import sys
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from backend.pipeline import RAGPipeline
@@ -36,6 +37,8 @@ def test_rag_pipeline():
     print(f"Chunks Retrieved : {response_1.chunks_retrieved}")
     print(f"Sources Used     : {response_1.sources}")
     print(f"Generated Answer :\n{response_1.answer}\n")
+
+    time.sleep(5)  # avoid Groq OTPM rate limit
 
     # Test Case 2: In-Scope Query (Streaming)
     query_2 = "Summarize the primary purpose of OmniContext."

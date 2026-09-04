@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+.git
+.gitignore
+chroma_db/
+data/
+uploads/
+*.db
+*.log
+frontend/node_modules
+frontend/dist

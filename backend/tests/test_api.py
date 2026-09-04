@@ -1,5 +1,8 @@
 import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from fastapi.testclient import TestClient
 
@@ -42,3 +45,9 @@ def test_batch_upload_ingests_valid_files_and_skips_unsupported():
         statuses = {d["status"] for d in body["details"]}
         assert "success" in statuses
         assert "skipped" in statuses
+
+
+if __name__ == "__main__":
+    test_health_and_router_registration()
+    test_batch_upload_ingests_valid_files_and_skips_unsupported()
+    print("All API tests passed!")

@@ -1,10 +1,15 @@
 from pathlib import Path
+import sys
 import chromadb
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-def inspect_chroma_db(db_path: str = None, collection_name: str = "omni_context"):
-    db_path = db_path or str(BASE_DIR / "chroma_db")
+from backend.config import CHROMA_DB_PATH, COLLECTION_NAME
+
+
+def inspect_chroma_db(db_path: str = None, collection_name: str = None):
+    db_path = db_path or str(CHROMA_DB_PATH)
+    collection_name = collection_name or COLLECTION_NAME
     db_directory = Path(db_path)
     if not db_directory.exists():
         print(f"Error: Database directory '{db_path}' does not exist. Run ingest.py first.")

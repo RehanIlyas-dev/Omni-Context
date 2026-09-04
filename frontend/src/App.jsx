@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   UploadCloud, Send, FileText, Database, ShieldCheck, Zap,
   CheckCircle, AlertCircle, ChevronRight, ChevronLeft,
-  Loader2, Sparkles, MessageSquare, Clock, ArrowLeft, Hash
+  Loader2, Clock, ArrowLeft, Hash
 } from 'lucide-react';
 import {
   streamChatQuery, uploadDocuments, fetchDocuments, fetchDocumentChunks
@@ -326,7 +326,6 @@ export default function App() {
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-12 flex-shrink-0 border-b border-white/[0.06] bg-[#0d0e12]/60 backdrop-blur-sm px-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <MessageSquare className="w-4 h-4 text-blue-400" />
             <span className="text-xs font-medium text-slate-400">RAG Chat</span>
             {isProcessing && (
               <span className="flex items-center gap-1.5 text-[10px] text-blue-400">
@@ -347,9 +346,6 @@ export default function App() {
         <div className="flex-1 overflow-y-auto px-5 py-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 ring-1 ring-blue-500/20 flex items-center justify-center mb-5">
-                <Sparkles className="w-7 h-7 text-blue-400" />
-              </div>
               <h2 className="text-base font-semibold text-slate-200 mb-1.5">Ask anything about your documents</h2>
               <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
                 Upload files in the sidebar, then ask a question. The system retrieves the most relevant chunks and generates an answer grounded in your data.
@@ -362,9 +358,6 @@ export default function App() {
                   <div className={`max-w-[85%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
                     {msg.sender === 'assistant' && (
                       <div className="flex items-center gap-2 mb-1.5">
-                        <div className="w-5 h-5 rounded-md bg-blue-500/10 ring-1 ring-blue-500/20 flex items-center justify-center">
-                          <Sparkles className="w-3 h-3 text-blue-400" />
-                        </div>
                         <span className="text-[10px] font-medium text-slate-500">Assistant</span>
                         {msg.cached && (
                           <span className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
@@ -479,9 +472,6 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
                 {activeSources.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06] flex items-center justify-center mb-3">
-                      <FileText className="w-5 h-5 text-slate-600" />
-                    </div>
                     <p className="text-xs text-slate-500">No context retrieved yet</p>
                     <p className="text-[10px] text-slate-600 mt-1">Send a query to see sources</p>
                   </div>

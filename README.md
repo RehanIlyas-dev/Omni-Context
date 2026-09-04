@@ -1,139 +1,208 @@
-# Omni-Context
+# OmniContext
 
-Omni-Context — The  retrieval-augmented generation (RAG) API built with
-**FastAPI**, **ChromaDB**, **FastEmbed**, and **Groq**. It ingests unstructured documents,
-generates semantic embeddings, persists them in a vector store, and serves grounded,
-citation-aware answers through a streaming-capable HTTP interface.
+A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, generate semantic embeddings, and get grounded, citation-aware answers through a streaming chat interface.
+
+**Backend:** FastAPI · ChromaDB · FastEmbed · Groq · Redis semantic cache
+**Frontend:** React 19 · Vite 8 · Tailwind CSS 4
+**Infra:** Docker · CI/CD · Railway · Vercel
+
+---
 
 ## Features
 
-- Document ingestion + chunking (LangChain text splitters)
-- Embeddings + vector storage (FastEmbed + ChromaDB, cosine distance)
-- FastAPI HTTP API (single + batch upload, streaming & non-streaming query)
-- LLM grounding via Groq (default model `qwen/qwen3.6-27b`)
+- **Document Ingestion** — Upload PDF, TXT, DOCX, MD, PPTX. Auto-chunked via LangChain text splitters.
+- **Semantic Embeddings** — FastEmbed (`BAAI/bge-small-en-v1.5`) generates 384-dim vectors locally on CPU.
+- **Vector Search** — ChromaDB with cosine distance retrieval and configurable score threshold.
+- **Streaming RAG** — Groq-powered generation (`qwen/qwen3.6-27b`) with real-time token streaming.
+- **Semantic Cache** — Redis-backed vector cache (RedisVL). Near-duplicate queries return cached responses instantly.
+- **Professional UI** — Dark theme chat interface with file upload, ingestion queue, source cards, and chunk viewer.
+- **Swagger UI** — Full API documentation at `/docs` with file picker support.
 
-## Requirements
+---
 
-- Python >= 3.11
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+## Quick Start
 
-## Setup
+### Prerequisites
+
+- Python 3.11+
+- Node.js 20+
+- Redis running locally
+
+### Setup
 
 ```bash
-# Create the virtual environment and install dependencies
+# Clone the repo
+git clone https://github.com/RehanIlyas-dev/Omni-Context.git
+cd Omni-Context
+
 uv sync
+source "Omni Context/bin/activate" # For Windows (Omni Context/script/activate)
 
-# Activate the virtual environment (note: it is named with a space; `uv sync` recreates it as `.venv`).
-- Run API: `uvicorn backend.main:app --reload`
-  - NOT `omni_context.main:app` — there is no `omni_context` package; all code is under `backend/`.
-- Run tests: `python -m pytest backend/tests/`
-  - `test_retriever.py` is fully local. `test_pipeline.py` / `test_llm.py` need a live `GROQ_API_KEY` (they skip their body if unset).
-- Run ingestion as a module: `python -m backend.ingest`
-  - `backend/` uses relative imports (`from .config import ...`), so always use `python -m backend.<module>` — never `python backend/ingest.py`.
+cd frontend && npm install && cd ..
+
+# Create .env
+cp .env.example .env # Edit .env with your GROQ_API_KEY
 ```
 
-Create a `.env` file in the repo root with your keys:
-
-```
-GROQ_API_KEY=your-key-here
-REDIS_URL=redis://localhost:6379
-```
-
-(A `.env.example` is provided as a template. `.env` is git-ignored.)
-
-## Running
-
-Make sure Redis is running before starting the API:
+### Run
 
 ```bash
+# Start Redis
 redis-server --daemonize yes
-```
 
-Then start the API:
-
-```bash
+# Start backend (terminal 1)
 uvicorn backend.main:app --reload
+
+# Start frontend (terminal 2)
+cd frontend && npm run dev
 ```
 
-Then open the interactive docs at http://localhost:8000/docs.
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- Swagger docs: http://localhost:8000/docs
+
+---
 
 ## API Endpoints
 
-| Method | Path              | Description                                                                                                                                       |
-| ------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/`             | Health check (`status`, `groq_configured`, `cache_enabled`).                                                                                                   |
-| POST   | `/upload`       | Upload a single file and index it (returns 201 on success).                                                                                       |
-| POST   | `/upload/batch` | Upload many files; per-file status (`success` / `skipped`).                                                                                   |
-| POST   | `/query`        | RAG query.`stream: true` → chunked text + `X-Rag-Meta` header; `stream: false` → JSON with `answer`, `sources`, `chunks_retrieved`, `cached`, `similarity_score`. |
+| Method | Path                             | Description                                |
+| ------ | -------------------------------- | ------------------------------------------ |
+| GET    | `/`                            | Health check                               |
+| POST   | `/upload`                      | Upload and index a single file             |
+| POST   | `/upload/batch`                | Upload multiple files with per-file status |
+| GET    | `/documents`                   | List all ingested files with chunk counts  |
+| GET    | `/documents/{filename}/chunks` | Get ordered chunks for a file              |
+| POST   | `/query`                       | RAG query — streaming or non-streaming    |
 
-### Semantic Cache
+### Query Parameters
 
-When enabled (Redis reachable at `REDIS_URL`), the `/query` endpoint caches responses by **semantic similarity** rather than exact string match:
-
-- **1st query** (cache miss): runs ChromaDB retrieval + Groq generation → returns `cached: False`
-- **2nd query** (exact match): `cached: True`, `similarity: 1.0` → instant response
-- **Near-duplicate** (e.g. "Tell me about Rehan" after "What is Rehan?"): `cached: True`, `similarity: 0.9154` if cosine distance ≤ 0.12
-
-Cache is **skipped** for file-type filtered queries and streaming responses (streaming generators aren't serializable). Configure `REDIS_URL` in `.env` to enable.
-
-```env
-REDIS_URL=redis://localhost:6379
+```json
+{
+  "query": "What is OmniContext?",
+  "stream": true,
+  "top_k": 3,
+  "file_type_filter": ".pdf"
+}
 ```
 
-All ingestion runs the embedding step off the event loop. Unsupported file types
-in `/upload/batch` are reported as `skipped` rather than failing the whole request.
+### Response (non-streaming)
 
-## Project layout
+```json
+{
+  "answer": "OmniContext is a RAG engine that...",
+  "sources": [{"source": "doc.pdf", "score": 0.87, "content": "..."}],
+  "chunks_retrieved": 3,
+  "cached": false,
+  "similarity_score": 0.87
+}
+```
 
-```
-Omni-Context/
-├── .env.example
-├── .gitignore
-├── README.md
-├── pyproject.toml
-├── uv.lock
-└── backend/
-    ├── __init__.py
-    ├── config.py
-    ├── ingest.py
-    ├── llm.py
-    ├── main.py
-    ├── pipeline.py
-    ├── retriever.py
-    ├── schemas.py
-    ├── state.py
-    ├── routers/
-    │   ├── __init__.py
-    │   ├── ingestion.py
-    │   └── query.py
-    └── tests/
-        ├── conftest.py
-        ├── inspect_db.py
-        ├── test_api.py
-        ├── test_llm.py
-        ├── test_pipeline.py
-        └── test_retriever.py
-```
+---
 
 ## Testing
 
 ```bash
-python -m pytest backend/tests/
+# Run all tests
+python -m pytest backend/tests/ -v
+
+# Run individual test files
+python backend/tests/test_retriever.py
+python backend/tests/test_llm.py
+python backend/tests/test_api.py
+python backend/tests/test_pipeline.py
 ```
 
-- `test_retriever.py` runs locally (no API key required).
-- `test_pipeline.py` / `test_llm.py` exercise the live Groq API and skip their body if `GROQ_API_KEY` is unset.
+- `test_retriever.py` — fully local, no API key needed
+- `test_api.py` — uses FastAPI TestClient
+- `test_llm.py` / `test_pipeline.py` — require `GROQ_API_KEY`
 
-To rebuild the vector store from the sample docs in `data/`:
+---
+
+## Project Structure
+
+```
+Omni-Context/
+├── .github/workflows/ci-cd.yml  
+├── .gitignore
+├── .env.example
+├── docker-compose.yml          
+├── pyproject.toml
+├── uv.lock
+├── backend/
+│   ├── __init__.py
+│   ├── config.py               
+│   ├── main.py               
+│   ├── state.py                
+│   ├── schemas.py             
+│   ├── ingest.py               
+│   ├── retriever.py            
+│   ├── pipeline.py             
+│   ├── llm.py                 
+│   ├── semantic_cache.py      
+│   ├── openapi_patch.py       
+│   ├── Dockerfile             
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── ingestion.py      
+│   │   └── query.py            
+│   └── tests/
+│       ├── conftest.py
+│       ├── inspect_db.py       
+│       ├── test_api.py
+│       ├── test_llm.py
+│       ├── test_pipeline.py
+│       └── test_retriever.py
+├── frontend/
+│   ├── .dockerignore
+│   ├── .gitignore
+│   ├── Dockerfile              
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── nginx.conf            
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vercel.json            
+│   ├── vite.config.js          
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   └── src/
+│       ├── App.jsx            
+│       ├── App.css
+│       ├── index.css           
+│       ├── main.jsx
+│       ├── assets/
+│       │   └── vite.svg
+│       └── services/
+│           └── api.js          
+└── data/                           # Sample documents (git-ignored)
+```
+
+---
+
+## Deployment
+
+### Backend — Railway
+
+1. Push to GitHub
+2. railway.app → New Project → Deploy from GitHub repo
+3. Add Redis: New → Database → Redis
+4. Set env vars: `GROQ_API_KEY`, `REDIS_URL` (from Redis addon)
+5. Deploy
+
+### Frontend — Vercel
+
+1. vercel.com → New Project → Import GitHub repo
+2. Root Directory: `frontend`
+3. Env var: `VITE_API_URL` = your Railway backend URL
+4. Deploy
+
+### Docker (local)
 
 ```bash
-python -m backend.ingest
+docker compose up
 ```
 
-(`chroma_db/` and `data/*` are git-ignored and must not be committed.)
+### Author
 
-## Frontend (planned)
-
-The intended client is a **React + Vite + Tailwind CSS** single-page app that calls
-this API (`/query`, `/upload`, `/upload/batch`). It is not yet scaffolded in this
-repository — this FastAPI service is the backend integration point.
+Made with ❤️ by Rehan

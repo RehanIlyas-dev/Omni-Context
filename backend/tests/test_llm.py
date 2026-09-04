@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import sys
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from backend.llm import LLMHandler
@@ -34,6 +35,8 @@ def test_generation():
             print(f"Groq live call skipped or failed (check API key / model access): {e}")
     else:
         print("GROQ_API_KEY not found in environment. Skipping live Groq API call.\n")
+
+    time.sleep(5)  # avoid Groq OTPM rate limit
 
     print("=== Testing Groq Streaming Generation ===")
     if os.getenv("GROQ_API_KEY"):
