@@ -55,10 +55,11 @@ class RedisSemanticCache:
                     ssl_cert_reqs=ssl.CERT_NONE,
                     ssl_check_hostname=False,
                 )
+                client.ping()  # verify connection
                 self.index.set_client(client)
             else:
                 self.index.connect(redis_url)
-            self.index.create(overwrite=False)
+            self.index.create(overwrite=True)
             self.connected = True
             logger.info("[CACHE] Redis semantic cache connected successfully.")
         except Exception as e:
