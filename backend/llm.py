@@ -17,7 +17,7 @@ Rules:
 4. Cite context sources using [Doc X] when referencing specific facts.
 """
 
-_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+_THINK_RE = re.compile(r"<think>.*?(?:</think>|</think>|$)", re.DOTALL | re.IGNORECASE)
 
 def _strip_think(text: str) -> str:
     # Remove thinking from the LLM response so that the rate limits are not exceeded 

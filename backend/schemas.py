@@ -13,7 +13,7 @@ class DocumentUploadResponse(BaseModel):
 # RAG Pipeline Schemas
 class QueryRequest(BaseModel):
     query: str = Field(..., example="What vector database does OmniContext use?")
-    top_k: int = Field(default=3, ge=1, le=10, description="Number of context chunks to retrieve")
+    top_k: int = Field(default=5, ge=1, le=10, description="Number of context chunks to retrieve")
     file_type_filter: Optional[str] = Field(None, example=".pdf", description="Optional file extension filter")
     model: str = Field(default=DEFAULT_GROQ_MODEL, description="Groq model ID")
     temperature: float = Field(default=0.2, ge=0.0, le=1.0)
