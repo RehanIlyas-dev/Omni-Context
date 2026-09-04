@@ -135,6 +135,7 @@ class LLMHandler:
         if stream:
             def chunk_generator():
                 buf = ""
+                think_content = ""
                 in_think = False
                 yielded_any = False
                 for chunk in response:
@@ -150,6 +151,7 @@ class LLMHandler:
                             else ("</think>" if "</think>" in buf else None)
                         )
                         if close_tag:
+                            think_content = buf[:buf.find(close_tag)]
                             rest = buf[buf.find(close_tag) + len(close_tag):]
                             if rest:
                                 yielded_any = True
@@ -160,9 +162,9 @@ class LLMHandler:
                         yielded_any = True
                         yield delta
                 # If everything was inside think tags and nothing was yielded,
-                # yield the buffered content as a fallback (Qwen 3 behavior)
-                if not yielded_any and buf:
-                    cleaned = re.sub(r"<think.*$", "", buf, flags=re.DOTALL | re.IGNORECASE).strip()
+                # yield the think content as a fallback (Qwen 3 behavior)
+                if not yielded_any and think_content:
+                    cleaned = re.sub(r"<think.*?>", "", think_content, flags=re.DOTALL | re.IGNORECASE).strip()
                     if cleaned:
                         yield cleaned
 
