@@ -129,7 +129,7 @@ class LLMHandler:
         """Interfaces with Groq Cloud API."""
         response = self.groq_client.chat.completions.create(
             model=model, messages=messages, temperature=temperature, stream=stream,
-            max_tokens=1024,
+            max_tokens=512,
         )
 
         if stream:
