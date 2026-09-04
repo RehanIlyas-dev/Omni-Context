@@ -99,13 +99,13 @@ class DocumentIngestor:
             raise ValueError(f"Unsupported file format: {ext}")
         
     # Processes and ingests multiple files sequentially in the ChromaDB
-    def ingest_files(self, file_paths: List[str]) -> List[Dict[str, Any]]:
+    def ingest_files(self, file_paths: List[str], session_id: str = "default") -> List[Dict[str, Any]]:
         results = []
         for path in file_paths:
             filename = Path(path).name
             file_ext = Path(path).suffix.lower()
             try:
-                self.ingest_file(path)
+                self.ingest_file(path, session_id=session_id)
                 results.append({
                     "filename": filename,
                     "file_type": file_ext,
@@ -129,9 +129,9 @@ class DocumentIngestor:
         )
         return splitter.split_text(text)
 
-    def ingest_file(self, file_path: str):
+    def ingest_file(self, file_path: str, session_id: str = "default"):
         path = Path(file_path)
-        print(f"Ingesting file: {path.name}")
+        print(f"Ingesting file: {path.name} (session: {session_id[:8]}...)")
 
         content = self.load_document(file_path)
         if not content.strip():
@@ -145,7 +145,7 @@ class DocumentIngestor:
 
         ids = [str(uuid.uuid4()) for _ in chunks]
         metadatas = [
-            {"source": path.name, "file_type": path.suffix.lower(), "chunk_index": i}
+            {"source": path.name, "file_type": path.suffix.lower(), "chunk_index": i, "session_id": session_id}
             for i in range(len(chunks))
         ]
 

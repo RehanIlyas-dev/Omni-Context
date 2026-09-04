@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import {
   UploadCloud, Send, FileText, Database, ShieldCheck, Zap,
   CheckCircle, AlertCircle, ChevronRight, ChevronLeft,
-  Loader2, Clock, ArrowLeft, Hash
+  Loader2, Clock, ArrowLeft, Hash, RotateCcw
 } from 'lucide-react';
 import {
-  streamChatQuery, uploadDocuments, fetchDocuments, fetchDocumentChunks
+  streamChatQuery, uploadDocuments, fetchDocuments, fetchDocumentChunks, clearSession
 } from './services/api';
 
 function UploadCard({ file, status }) {
@@ -126,6 +126,19 @@ export default function App() {
   const [loadingChunks, setLoadingChunks] = useState(false);
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
+
+  const handleNewSession = () => {
+    clearSession();
+    setMessages([]);
+    setActiveSources([]);
+    setDocuments([]);
+    setSelectedDoc(null);
+    setDocChunks([]);
+    setUploadStatuses([]);
+    fetchDocuments()
+      .then((data) => setDocuments(data.documents || []))
+      .catch(() => {});
+  };
 
   useEffect(() => {
     fetchDocuments()
@@ -314,7 +327,14 @@ export default function App() {
           )}
         </div>
 
-        <div className="p-4 border-t border-white/[0.06]">
+        <div className="p-4 border-t border-white/[0.06] space-y-3">
+          <button
+            onClick={handleNewSession}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] ring-1 ring-white/[0.06] text-xs font-medium text-slate-400 hover:text-slate-200 transition-all"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            New Session
+          </button>
           <div className="flex items-center gap-2 text-[10px] text-slate-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>FastAPI + Redis Connected</span>

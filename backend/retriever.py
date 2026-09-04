@@ -40,7 +40,8 @@ class VectorRetriever:
         self,
         query: str,
         top_k: int = 3,
-        file_type_filter: Optional[str] = None
+        file_type_filter: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> list[RetrievalResult]:
         
         # Convert query to vector, perform similarity search in ChromaDB and return structured results as a list of RetrievalResult objects.
@@ -52,8 +53,16 @@ class VectorRetriever:
 
         # Configure Optional Metadata Filters
         where_clause = None
+        conditions = []
         if file_type_filter:
-            where_clause = {"file_type": file_type_filter.lower()}
+            conditions.append({"file_type": file_type_filter.lower()})
+        if session_id:
+            conditions.append({"session_id": session_id})
+
+        if len(conditions) == 1:
+            where_clause = conditions[0]
+        elif len(conditions) > 1:
+            where_clause = {"$and": conditions}
 
         # Vector Similarity Search
         results = self.collection.query(

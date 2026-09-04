@@ -1,7 +1,7 @@
 import json
 import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from fastapi.responses import StreamingResponse
 
 from backend.schemas import QueryRequest, QueryResponse
@@ -11,7 +11,7 @@ query_router = APIRouter(tags=["RAG Chain"])
 
 
 @query_router.post("/query")
-def query_rag(request: QueryRequest):
+def query_rag(request: QueryRequest, x_session_id: str = Header(default="default")):
     # Executes vector retrieval and generates a grounded response using Groq
     if not state.pipeline:
         raise HTTPException(status_code=500, detail="RAG Pipeline not initialized.")
@@ -31,6 +31,7 @@ def query_rag(request: QueryRequest):
                 model=request.model,
                 temperature=request.temperature,
                 stream=True,
+                session_id=x_session_id,
             )
 
             def stream_response_wrapper():
@@ -56,6 +57,7 @@ def query_rag(request: QueryRequest):
             model=request.model,
             temperature=request.temperature,
             stream=False,
+            session_id=x_session_id,
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Generation failed: {str(e)}")

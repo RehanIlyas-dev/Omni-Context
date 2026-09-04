@@ -1,12 +1,29 @@
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
-// Uploads multiple documents to the backend and returns the result.
+function getSessionId() {
+  let sid = localStorage.getItem("omni_session_id");
+  if (!sid) {
+    sid = crypto.randomUUID();
+    localStorage.setItem("omni_session_id", sid);
+  }
+  return sid;
+}
+
+export function clearSession() {
+  localStorage.removeItem("omni_session_id");
+}
+
+function sessionHeaders(extra = {}) {
+  return { "X-Session-ID": getSessionId(), ...extra };
+}
+
 export async function uploadDocuments(files) {
   const formData = new FormData();
   Array.from(files).forEach((file) => formData.append("files", file));
 
   const response = await fetch(`${API_BASE}/upload/batch`, {
     method: "POST",
+    headers: sessionHeaders(),
     body: formData,
   });
 
@@ -14,11 +31,10 @@ export async function uploadDocuments(files) {
   return response.json();
 }
 
-// Streams a chat query to the backend and invokes callbacks for each chunk of data received.
 export async function streamChatQuery(query, onChunk, onMetaData) {
   const response = await fetch(`${API_BASE}/query`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: sessionHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ query, stream: true }),
   });
 
@@ -44,16 +60,18 @@ export async function streamChatQuery(query, onChunk, onMetaData) {
   }
 }
 
-// Fetches the list of all ingested documents from the backend.
 export async function fetchDocuments() {
-  const response = await fetch(`${API_BASE}/documents`);
+  const response = await fetch(`${API_BASE}/documents`, {
+    headers: sessionHeaders(),
+  });
   if (!response.ok) throw new Error("Failed to fetch documents");
   return response.json();
 }
 
-// Fetches chunks for a specific document by filename.
 export async function fetchDocumentChunks(filename) {
-  const response = await fetch(`${API_BASE}/documents/${encodeURIComponent(filename)}/chunks`);
+  const response = await fetch(`${API_BASE}/documents/${encodeURIComponent(filename)}/chunks`, {
+    headers: sessionHeaders(),
+  });
   if (!response.ok) throw new Error("Failed to fetch chunks");
   return response.json();
 }

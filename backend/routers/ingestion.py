@@ -4,7 +4,7 @@ from pathlib import Path
 from collections import defaultdict
 from typing import List
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, HTTPException, Header, status
 from fastapi.concurrency import run_in_threadpool
 
 from backend.config import ALLOWED_EXTENSIONS
@@ -26,7 +26,7 @@ ingestion_router = APIRouter(tags=["Ingestion"])
     response_model=DocumentUploadResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(file: UploadFile = File(...), x_session_id: str = Header(default="default")):
     # Upload a file, validate it, and ingest it into ChromaDB.
     if not state.ingestor:
         raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
@@ -44,7 +44,7 @@ async def upload_document(file: UploadFile = File(...)):
         with temp_file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        await run_in_threadpool(state.ingestor.ingest_file, str(temp_file_path))
+        await run_in_threadpool(state.ingestor.ingest_file, str(temp_file_path), session_id=x_session_id)
 
         return DocumentUploadResponse(
             filename=file.filename,
@@ -64,7 +64,7 @@ async def upload_document(file: UploadFile = File(...)):
     response_model=BatchDocumentUploadResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def upload_batch_documents(files: List[UploadFile] = File(...)):
+async def upload_batch_documents(files: List[UploadFile] = File(...), x_session_id: str = Header(default="default")):
     
     # Upload multiple files, validate them, and ingest them into ChromaDB in batch.
     if not state.ingestor:
@@ -100,7 +100,7 @@ async def upload_batch_documents(files: List[UploadFile] = File(...)):
         # Step 2: Batch ingest valid files into ChromaDB off the event loop.
         if saved_temp_paths:
             batch_results = await run_in_threadpool(
-                state.ingestor.ingest_files, saved_temp_paths
+                state.ingestor.ingest_files, saved_temp_paths, session_id=x_session_id
             )
             for res in batch_results:
                 details.append(DocumentUploadResponse(**res))
@@ -128,7 +128,7 @@ async def upload_batch_documents(files: List[UploadFile] = File(...)):
     response_model=DocumentListResponse,
     status_code=status.HTTP_200_OK,
 )
-async def list_documents():
+async def list_documents(x_session_id: str = Header(default="default")):
     # List all unique ingested files with chunk counts from ChromaDB.
     if not state.ingestor:
         raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
@@ -136,7 +136,10 @@ async def list_documents():
     try:
         # Fetch all documents and their metadata from the ChromaDB collection.
         collection = state.ingestor.collection
-        result = collection.get(include=["metadatas"])
+        result = collection.get(
+            include=["metadatas"],
+            where={"session_id": x_session_id} if x_session_id != "default" else None,
+        )
         if not result["ids"]:
             return DocumentListResponse(documents=[])
 
@@ -164,16 +167,17 @@ async def list_documents():
     response_model=ChunkListResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_document_chunks(filename: str):
+async def get_document_chunks(filename: str, x_session_id: str = Header(default="default")):
     # Get all chunks for a specific document, ordered by chunk_index.
     if not state.ingestor:
         raise HTTPException(status_code=500, detail="Ingestion engine not initialized.")
 
     try:
         collection = state.ingestor.collection
+        where_clause = {"$and": [{"source": filename}, {"session_id": x_session_id}]}
         result = collection.get(
             include=["documents", "metadatas"],
-            where={"source": filename},
+            where=where_clause,
         )
         if not result["ids"]:
             raise HTTPException(status_code=404, detail=f"No chunks found for '{filename}'.")

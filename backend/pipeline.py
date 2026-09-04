@@ -49,11 +49,13 @@ class RAGPipeline:
         model: Optional[str] = None,
         temperature: float = 0.2,
         stream: bool = True,
+        session_id: Optional[str] = None,
     ) -> RAGResponse:
         # Step 0: Check semantic cache (skip if filtering or streaming — cached
         # answer is a plain string, but streaming callers expect a generator)
+        cache_key = f"{session_id or 'default'}:{query}"
         if self.cache and not file_type_filter:
-            cached = self.cache.get(query)
+            cached = self.cache.get(cache_key)
             if cached:
                 answer_text = cached["answer"]
                 if stream:
@@ -81,6 +83,7 @@ class RAGPipeline:
             query=query,
             top_k=top_k,
             file_type_filter=file_type_filter,
+            session_id=session_id,
         )
 
         # Step 2: Format Chunks & Source Metadata
@@ -142,7 +145,7 @@ class RAGPipeline:
         # are not serializable — callers will get a cache miss next time
         # for that exact query until a non-stream request populates it)
         if self.cache and not stream:
-            self.cache.set(query, {
+            self.cache.set(cache_key, {
                 "query": query,
                 "answer": answer,
                 "sources": sources,

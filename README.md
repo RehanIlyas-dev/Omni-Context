@@ -10,9 +10,7 @@ A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, gene
 
 ## Live Demo
 
-- **Frontend:** [omni-context-three.vercel.app](https://omni-context-three.vercel.app)
-- **Backend API:** [omni-context-jys7.onrender.com](https://omni-context-jys7.onrender.com)
-- **Swagger Docs:** [omni-context-jys7.onrender.com/docs](https://omni-context-jys7.onrender.com/docs)
+🔗 **Live:** [omni-context-three.vercel.app](https://omni-context-three.vercel.app) · [API docs](https://omni-context-jys7.onrender.com/docs)
 
 ---
 
