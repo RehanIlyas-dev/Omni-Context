@@ -3,7 +3,9 @@
 A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, generate semantic embeddings, and get grounded, citation-aware answers through a streaming chat interface.
 
 **Backend:** FastAPI · ChromaDB · FastEmbed · Groq · Redis semantic cache
+
 **Frontend:** React 19 · Vite 8 · Tailwind CSS 4
+
 **Infra:** Docker · CI/CD · Render · Vercel
 
 ---
@@ -20,7 +22,7 @@ A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, gene
 - **Semantic Embeddings** — FastEmbed (`BAAI/bge-small-en-v1.5`) generates 384-dim vectors locally on CPU.
 - **Vector Search** — ChromaDB with cosine distance retrieval and configurable score threshold.
 - **Streaming RAG** — Groq-powered generation (`qwen/qwen3.6-27b`) with real-time token streaming.
-- **Semantic Cache** — Redis-backed vector cache (RedisVL). Near-duplicate queries return cached responses instantly.
+- **Semantic Cache** — Redis-backed vector cache (RedisVL). Near-duplicate queries return cached responses instantly. *(Note: Render free-tier Valkey 8 lacks RediSearch, so cache gracefully disables on deployment — works fully locally.)*
 - **Session Isolation** — Anonymous UUID sessions. Each browser gets isolated documents. "New Session" button clears state.
 - **Professional UI** — Dark theme chat interface with file upload, ingestion queue, source cards, and chunk viewer.
 - **Swagger UI** — Full API documentation at `/docs` with file picker support.
