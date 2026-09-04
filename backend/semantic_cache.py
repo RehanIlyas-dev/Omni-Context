@@ -48,14 +48,16 @@ class RedisSemanticCache:
 
         try:
             self.index = SearchIndex.from_dict(schema)
-            # Render Redis requires TLS — always attempt SSL connection
-            if "localhost" not in redis_url:
+            # Use TLS for rediss:// URLs (external), plain for redis:// (internal)
+            if redis_url.startswith("rediss://"):
                 client = Redis.from_url(
                     redis_url,
                     ssl_cert_reqs=ssl.CERT_NONE,
                     ssl_check_hostname=False,
+                    socket_connect_timeout=10,
+                    socket_timeout=10,
                 )
-                client.ping()  # verify connection
+                client.ping()
                 self.index.set_client(client)
             else:
                 self.index.connect(redis_url)
