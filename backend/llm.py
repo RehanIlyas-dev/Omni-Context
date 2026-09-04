@@ -129,7 +129,7 @@ class LLMHandler:
         """Interfaces with Groq Cloud API."""
         response = self.groq_client.chat.completions.create(
             model=model, messages=messages, temperature=temperature, stream=stream,
-            max_tokens=512,
+            max_tokens=1024,
         )
 
         if stream:
@@ -161,10 +161,12 @@ class LLMHandler:
                     else:
                         yielded_any = True
                         yield delta
-                # If everything was inside think tags and nothing was yielded,
-                # yield the think content as a fallback (Qwen 3 behavior)
-                if not yielded_any and think_content:
-                    cleaned = re.sub(r"<think.*?>", "", think_content, flags=re.DOTALL | re.IGNORECASE).strip()
+                # If nothing was yielded outside think tags, yield the fallback.
+                # think_content is set when </think> is found; buf holds the
+                # unclosed think text when the stream ends mid-think.
+                fallback = think_content or buf
+                if not yielded_any and fallback:
+                    cleaned = re.sub(r"<think.*?>", "", fallback, flags=re.DOTALL | re.IGNORECASE).strip()
                     if cleaned:
                         yield cleaned
 
