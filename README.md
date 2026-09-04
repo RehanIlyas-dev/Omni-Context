@@ -1,12 +1,18 @@
-# Omni Context
+# OmniContext
 
 A full-stack Retrieval-Augmented Generation (RAG) engine. Upload documents, generate semantic embeddings, and get grounded, citation-aware answers through a streaming chat interface.
 
 **Backend:** FastAPI · ChromaDB · FastEmbed · Groq · Redis semantic cache
-
 **Frontend:** React 19 · Vite 8 · Tailwind CSS 4
+**Infra:** Docker · CI/CD · Render · Vercel
 
-**Infra:** Docker · CI/CD · Railway · Vercel
+---
+
+## Live Demo
+
+- **Frontend:** [omni-context-three.vercel.app](https://omni-context-three.vercel.app)
+- **Backend API:** [omni-context-jys7.onrender.com](https://omni-context-jys7.onrender.com)
+- **Swagger Docs:** [omni-context-jys7.onrender.com/docs](https://omni-context-jys7.onrender.com/docs)
 
 ---
 
@@ -38,12 +44,12 @@ git clone https://github.com/RehanIlyas-dev/Omni-Context.git
 cd Omni-Context
 
 uv sync
-source "Omni Context/bin/activate" # For Windows (Omni Context/script/activate)
+source "Omni Context/bin/activate"
 
 cd frontend && npm install && cd ..
 
-# Create .env
-cp .env.example .env # Edit .env with your GROQ_API_KEY
+cp .env.example .env
+# Edit .env with your GROQ_API_KEY
 ```
 
 ### Run
@@ -67,16 +73,16 @@ cd frontend && npm run dev
 
 ## API Endpoints
 
-| Method | Path                             | Description                                |
-| ------ | -------------------------------- | ------------------------------------------ |
-| GET    | `/`                            | Health check                               |
-| POST   | `/upload`                      | Upload and index a single file             |
-| POST   | `/upload/batch`                | Upload multiple files with per-file status |
-| GET    | `/documents`                   | List all ingested files with chunk counts  |
-| GET    | `/documents/{filename}/chunks` | Get ordered chunks for a file              |
-| POST   | `/query`                       | RAG query — streaming or non-streaming    |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Health check |
+| POST | `/upload` | Upload and index a single file |
+| POST | `/upload/batch` | Upload multiple files with per-file status |
+| GET | `/documents` | List all ingested files with chunk counts |
+| GET | `/documents/{filename}/chunks` | Get ordered chunks for a file |
+| POST | `/query` | RAG query — streaming or non-streaming |
 
-### Query Parameters
+### Query
 
 ```json
 {
@@ -124,32 +130,32 @@ python backend/tests/test_pipeline.py
 
 ```
 Omni-Context/
-├── .github/workflows/ci-cd.yml  
+├── .github/workflows/ci-cd.yml
 ├── .gitignore
 ├── .env.example
-├── docker-compose.yml          
+├── docker-compose.yml
 ├── pyproject.toml
 ├── uv.lock
 ├── backend/
 │   ├── __init__.py
-│   ├── config.py               
-│   ├── main.py               
-│   ├── state.py                
-│   ├── schemas.py             
-│   ├── ingest.py               
-│   ├── retriever.py            
-│   ├── pipeline.py             
-│   ├── llm.py                 
-│   ├── semantic_cache.py      
-│   ├── openapi_patch.py       
-│   ├── Dockerfile             
+│   ├── config.py
+│   ├── main.py
+│   ├── state.py
+│   ├── schemas.py
+│   ├── ingest.py
+│   ├── retriever.py
+│   ├── pipeline.py
+│   ├── llm.py
+│   ├── semantic_cache.py
+│   ├── openapi_patch.py
+│   ├── Dockerfile
 │   ├── routers/
 │   │   ├── __init__.py
-│   │   ├── ingestion.py      
-│   │   └── query.py            
+│   │   ├── ingestion.py
+│   │   └── query.py
 │   └── tests/
 │       ├── conftest.py
-│       ├── inspect_db.py       
+│       ├── inspect_db.py
 │       ├── test_api.py
 │       ├── test_llm.py
 │       ├── test_pipeline.py
@@ -157,54 +163,31 @@ Omni-Context/
 ├── frontend/
 │   ├── .dockerignore
 │   ├── .gitignore
-│   ├── Dockerfile              
+│   ├── Dockerfile
 │   ├── eslint.config.js
 │   ├── index.html
-│   ├── nginx.conf            
+│   ├── nginx.conf
 │   ├── package.json
 │   ├── package-lock.json
-│   ├── vercel.json            
-│   ├── vite.config.js          
+│   ├── vercel.json
+│   ├── vite.config.js
 │   ├── public/
 │   │   ├── favicon.svg
 │   │   └── icons.svg
 │   └── src/
-│       ├── App.jsx            
+│       ├── App.jsx
 │       ├── App.css
-│       ├── index.css           
+│       ├── index.css
 │       ├── main.jsx
 │       ├── assets/
 │       │   └── vite.svg
 │       └── services/
-│           └── api.js          
-└── data/                           # Sample documents (git-ignored)
+│           └── api.js
+└── data/
 ```
 
 ---
 
-## Deployment
-
-### Backend — Railway
-
-1. Push to GitHub
-2. railway.app → New Project → Deploy from GitHub repo
-3. Add Redis: New → Database → Redis
-4. Set env vars: `GROQ_API_KEY`, `REDIS_URL` (from Redis addon)
-5. Deploy
-
-### Frontend — Vercel
-
-1. vercel.com → New Project → Import GitHub repo
-2. Root Directory: `frontend`
-3. Env var: `VITE_API_URL` = your Railway backend URL
-4. Deploy
-
-### Docker (local)
-
-```bash
-docker compose up
-```
-
-### Author
+## Author
 
 Made with ❤️ by Rehan

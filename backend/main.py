@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import chromadb
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import CHROMA_DB_PATH, COLLECTION_NAME, DEFAULT_GROQ_MODEL, REDIS_URL
 from backend.ingest import DocumentIngestor
@@ -46,6 +47,14 @@ app = FastAPI(
 
 app.include_router(ingestion_router)
 app.include_router(query_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 patch_upload_openapi(app)
 
