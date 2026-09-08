@@ -85,6 +85,13 @@ export function useDocuments() {
     handleFiles(e.dataTransfer.files);
   }, [handleFiles]);
 
+  const resetDocuments = useCallback(() => {
+    setSelectedDoc(null);
+    setDocChunks([]);
+    setUploadStatuses([]);
+    loadDocuments();
+  }, [loadDocuments]);
+
   return {
     documents,
     uploadStatuses,
@@ -97,5 +104,6 @@ export function useDocuments() {
     handleFiles,
     handleDrop,
     loadDocuments,
+    resetDocuments,
   };
 }

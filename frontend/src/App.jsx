@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useChat } from './hooks/useChat';
 import { useDocuments } from './hooks/useDocuments';
 import Sidebar from './components/Sidebar';
@@ -15,7 +16,7 @@ export default function App() {
     setShowContext,
     chatEndRef,
     handleSend,
-    handleNewSession,
+    handleNewSession: chatReset,
   } = useChat();
 
   const {
@@ -29,7 +30,13 @@ export default function App() {
     handleDocClick,
     handleFiles,
     handleDrop,
+    resetDocuments,
   } = useDocuments();
+
+  const handleNewSession = useCallback(() => {
+    chatReset();
+    resetDocuments();
+  }, [chatReset, resetDocuments]);
 
   return (
     <div className="flex h-screen bg-[#0a0b0e] text-slate-200 font-sans antialiased selection:bg-blue-500/20 selection:text-blue-200">
